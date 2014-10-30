@@ -8,7 +8,7 @@ initialize <-function ()
 ##This function return the full path+ file name to be read
 getFullPathFileName <-function(pFileName)
 {
-  return (paste(paste(getwd(),paste("repdata_data_activity", pFileName, sep="/"), sep="/"), ".csv" , sep=""))
+  return (paste(paste(getwd(),paste("activity", pFileName, sep="/"), sep="/"), ".csv" , sep=""))
 }
 
 ## Gets the Steps Dt
@@ -62,7 +62,12 @@ plotHistogramWithoutNa <-function()
   dtPlot <- getPlotDtStepsWithoutNa()
   #dtPlot <- sqldf("select date, totalSteps from dtPlot")
   #qplot(dtPlot$date, dtPlot$sumSteps) +geom_histogram()
-  ggplot(data=dtPlot, aes(x=date, y=totalSteps)) + geom_bar(stat="identity", colour="black")
+  ggplot(data=dtPlot, aes(x=date, y=totalSteps)) + 
+     geom_bar(stat="identity", colour="black") +
+     xlab("date") +
+     ylab("Total Steps") +
+     ggtitle("Total steps per day")
+  
   #_ggplot(data=dtPlot, aes(date)) + geom_bar(aes(y=totalSteps), stat="identity") + geom_line(aes(y=avgSteps, color="blue"))
   
   ##avg steps:

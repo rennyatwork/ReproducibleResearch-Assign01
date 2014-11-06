@@ -8,15 +8,106 @@ output:
 
 ## Loading and preprocessing the data
 
+###Loading and processing the data
+```{r functions,  echo=TRUE}
+##initialize to use library sqldf
+initialize <-function ()
+{
+  library(sqldf)
+  library(ggplot2)
+}
 
+##This function return the full path+ file name to be read
+getFullPathFileName <-function(pFileName)
+{
+  return (paste(paste(getwd(),paste("activity", pFileName, sep="/"), sep="/"), ".csv" , sep=""))
+}
+
+## Gets the Steps Dt
+#This function reads the csv file into a datatable
+getDtSteps <- function()
+{ 
+  if(!exists("dtSteps"))
+  {
+    dtSteps <<- read.csv(getFullPathFileName('activity'), header=T, sep=",")
+  }
+  dtSteps$steps <- as.numeric (dtSteps$steps)
+  dtSteps$date <- as.Date(dtSteps$date, "%Y-%m-%d")    
+  return (dtSteps);  
+}
+
+
+
+##Gets a datatable without NA values
+getDtStepsWithoutNa <- function()
+{
+  dtSteps <- getDtSteps()  
+  return (
+sqldf("SELECT 
+        *
+        FROM dtSteps 
+        WHERE steps <>'NA'
+        ")
+)
+}
+
+## Gets the plotting dt
+# groupb by day
+getPlotDtStepsWithoutNa <-function()
+{
+  dtSteps<- getDtStepsWithoutNa()
+  return( sqldf("SELECT 
+        date
+        ,sum(steps) as totalSteps
+        ,avg(steps) as avgSteps
+        ,median(steps) as medianSteps
+         
+        FROM
+        dtSteps
+        GROUP BY date
+        ")
+  )
+}
+
+## @knitr plotHistogramWithoutNa
+plotHistogramWithoutNa <-function()
+{
+  dtPlot <- getPlotDtStepsWithoutNa()
+  #dtPlot <- sqldf("select date, totalSteps from dtPlot")
+  #qplot(dtPlot$date, dtPlot$sumSteps) +geom_histogram()
+  ggplot(data=dtPlot, aes(x=date, y=totalSteps)) + 
+     geom_bar(stat="identity", colour="black") +
+     xlab("date") +
+     ylab("Total Steps") +
+     ggtitle("Total steps per day")  
+ 
+}
+
+
+initialize()
+dtSteps<- getDtStepsWithoutNa()
+dtPlotStepsWithoutNa <- getPlotDtStepsWithoutNa()
+
+```
 
 ## What is mean total number of steps taken per day?
 
+```{r avgSteps}
+ ggplot(data=dtPlotStepsWithoutNa, aes(x=date, y=totalSteps)) + 
+     geom_bar(stat="identity", colour="black") +
+     xlab("date") +
+     ylab("Total Steps") +
+     ggtitle("Total steps per day")  
 
+```
+
+### Mean steps per day:
+```{r meanSteps}
+mean(dtPlotStepsWithoutNa$totalSteps)
+```
 
 ## What is the average daily activity pattern?
-
-
+  
 
 ## Imputing missing values
 

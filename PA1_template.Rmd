@@ -106,8 +106,24 @@ dtPlotStepsWithoutNa <- getPlotDtStepsWithoutNa()
 mean(dtPlotStepsWithoutNa$totalSteps)
 ```
 
+###Median stepsper day
+```{r medianSteps}
+median(dtPlotStepsWithoutNa$totalSteps)  
+```
+
 ## What is the average daily activity pattern?
-  
+```{r activityPattern}
+  dtStepsWithoutNa <- getDtStepsWithoutNa()
+  dtStepsWithoutNa$avgSteps <-mean(dtPlotStepsWithoutNa$totalSteps)
+ 
+
+ggplot(data=dtStepsWithoutNa, aes(x=interval, y=steps)) + 
+     geom_line(colour="blue", linetype="solid") +
+     xlab("interval") +
+     ylab("Steps") +
+     ggtitle("Total steps per interval") +
+     
+```
 
 ## Imputing missing values
 

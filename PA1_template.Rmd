@@ -69,6 +69,22 @@ getPlotDtStepsWithoutNa <-function()
   )
 }
 
+getPlotDtStepsWithoutNaGroupInterval <-function()
+{
+   dtSteps<- getDtStepsWithoutNa()
+   return( sqldf("SELECT 
+        interval
+        ,sum(steps) as totalSteps
+        ,avg(steps) as avgSteps
+        ,median(steps) as medianSteps
+         
+        FROM
+        dtSteps
+        GROUP BY interval
+        ")
+   )
+}
+
 ## @knitr plotHistogramWithoutNa
 plotHistogramWithoutNa <-function()
 {
@@ -113,17 +129,23 @@ median(dtPlotStepsWithoutNa$totalSteps)
 
 ## What is the average daily activity pattern?
 ```{r activityPattern}
-  dtStepsWithoutNa <- getDtStepsWithoutNa()
+  dtStepsWithoutNa <- getPlotDtStepsWithoutNaGroupInterval()
   dtStepsWithoutNa$avgSteps <-mean(dtPlotStepsWithoutNa$totalSteps)
  
 
-ggplot(data=dtStepsWithoutNa, aes(x=interval, y=steps)) + 
+ggplot(data=dtStepsWithoutNa, aes(x=interval, y=totalSteps)) + 
      geom_line(colour="blue", linetype="solid") +
      xlab("interval") +
      ylab("Steps") +
-     ggtitle("Total steps per interval") +
+     ggtitle("Total steps per interval") 
      
 ```
+
+Interval with the highest number of steps:
+```{r maxNumberSteps}
+ sqldf("select  interval  from dtStepsWithoutNa WHERE totalSteps = (select max(totalSteps) from dtStepsWithoutNa)")
+```
+
 
 ## Imputing missing values
 

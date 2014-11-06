@@ -57,6 +57,28 @@ getPlotDtStepsWithoutNa <-function()
   )
 }
 
+###plot 2
+##What is the average daily activity pattern?
+##Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
+##Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+getPlotDtStepsWithoutNaGroupInterval <-function()
+{
+   dtSteps<- getDtStepsWithoutNa()
+   return( sqldf("SELECT 
+        interval
+        ,sum(steps) as totalSteps
+        ,avg(steps) as avgSteps
+        ,median(steps) as medianSteps
+         
+        FROM
+        dtSteps
+        GROUP BY interval
+        ")
+   )
+}
+
+## @knitr plotHistogramWithoutNa
 plotHistogramWithoutNa <-function()
 {
   dtPlot <- getPlotDtStepsWithoutNa()
@@ -101,3 +123,5 @@ getMedianStepsPerDay <-function()
 
 ##total number of missing values
 # nrow (subset(dtSteps, is.na(steps) ))
+
+#dtStepsWithoutNa <- getPlotDtStepsWithoutNaGroupInterval()

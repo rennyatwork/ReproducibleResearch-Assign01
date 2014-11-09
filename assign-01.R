@@ -109,6 +109,29 @@ getMedianStepsPerDay <-function()
   return (median(getPlotDtStepsWithoutNa()$totalSteps)  )
 }
 
+#This is used to fill missing values
+getDtMedianStepsPerInterval <-function()
+{
+   dtSteps <- getDtSteps()
+   return (sqldf("select interval, median(steps) as steps from dtSteps WHERE steps <>'NA'  group by interval"))
+}
+
+#insert missing values
+getDtFilledMissingValues <- function()
+{
+   dtMedianMissingSteps <- getDtMedianStepsPerInterval()
+   dtMissingSteps<- sqldf("select step1.*, 
+                           step2.steps as missingStep 
+                           FROM dtSteps step1 
+                           left join dtMedianMissingSteps step2 on step1.interval = step2.interval")
+   
+   return(sqldf("select 
+                dtMissingSteps.*
+                , case  
+                  when steps is null then missingStep 
+                  else steps end as adjStep 
+                from dtMissingSteps"))
+}
 
 # x <- as.data.frame(c(1,2,3,4,5))
 # colnames(x) <- c("x")

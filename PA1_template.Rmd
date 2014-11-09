@@ -99,9 +99,33 @@ plotHistogramWithoutNa <-function()
  
 }
 
+#This is used to fill missing values
+getDtMedianStepsPerInterval <-function()
+{
+   dtSteps <- getDtSteps()
+   return (sqldf("select interval, median(steps) as steps from dtSteps WHERE steps <>'NA'  group by interval"))
+}
+
+#insert missing values
+getDtFilledMissingValues <- function()
+{
+   dtMedianMissingSteps <- getDtMedianStepsPerInterval()
+   dtMissingSteps<- sqldf("select step1.*, 
+                           step2.steps as missingStep 
+                           FROM dtSteps step1 
+                           left join dtMedianMissingSteps step2 on step1.interval = step2.interval")
+   
+   return(sqldf("select 
+                dtMissingSteps.*
+                , case  
+                  when steps is null then missingStep 
+                  else steps end as adjStep 
+                from dtMissingSteps"))
+}
 
 initialize()
-dtSteps<- getDtStepsWithoutNa()
+dtSteps<- getDtSteps()
+dtStepsWithoutNa<- getDtStepsWithoutNa()
 dtPlotStepsWithoutNa <- getPlotDtStepsWithoutNa()
 
 ```
@@ -143,12 +167,31 @@ ggplot(data=dtStepsWithoutNa, aes(x=interval, y=totalSteps)) +
 
 Interval with the highest number of steps:
 ```{r maxNumberSteps}
+#selects the interval corresponding to the max number of steps
  sqldf("select  interval  from dtStepsWithoutNa WHERE totalSteps = (select max(totalSteps) from dtStepsWithoutNa)")
 ```
 
 
 ## Imputing missing values
+Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
+```{r totalNumberMissingValues}
+#get dataste without NA
+dtStepsWithoutNa <- getDtStepsWithoutNa()
+#subtracts the number of rows in the dataset withoutNA from full dataset
+nrow(dtSteps) - nrow(dtStepsWithoutNa)
+```
+
+Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+--> Used median steps per interval. This is done in function getDtMedianStepsPerInterval()
+
+Create a new dataset that is equal to the original dataset but with the missing data filled in.
 
 
+```{r fillingMissingValues}
+## getDtFilledMissingValues() adds a new column (adjStep) that
+## contains steps (if <> NA) or the median(steps) for that interval ##oterhwise
+dtMissingSteps <-getDtFilledMissingValues()
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
